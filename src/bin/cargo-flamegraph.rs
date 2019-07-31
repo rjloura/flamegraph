@@ -18,7 +18,8 @@ struct Opt {
         long = "bin",
         conflicts_with = "bench",
         conflicts_with = "example",
-        conflicts_with = "test"
+        conflicts_with = "test",
+        conflicts_with = "unit_test"
     )]
     bin: Option<String>,
 
@@ -27,7 +28,8 @@ struct Opt {
         long = "example",
         conflicts_with = "bench",
         conflicts_with = "bin",
-        conflicts_with = "test"
+        conflicts_with = "test",
+        conflicts_with = "unit_test"
     )]
     example: Option<String>,
 
@@ -40,12 +42,23 @@ struct Opt {
     )]
     test: Option<String>,
 
+    /// Unit test to run
+    #[structopt(
+    long = "unit_test",
+    conflicts_with = "bench",
+    conflicts_with = "bin",
+    conflicts_with = "example",
+    conflicts_with = "test"
+    )]
+    unit_test: Option<String>,
+
     /// Benchmark to run
     #[structopt(
         long = "bench",
         conflicts_with = "bin",
         conflicts_with = "example",
-        conflicts_with = "test"
+        conflicts_with = "test",
+        conflicts_with = "unit_test"
     )]
     bench: Option<String>,
 
@@ -76,7 +89,13 @@ enum Opts {
 
 fn build(opt: &Opt) {
     let mut cmd = std::process::Command::new("cargo");
-    cmd.arg("build");
+
+    if opt.unit_test.is_some() {
+        cmd.arg("test");
+        cmd.arg("--no-run");
+    } else {
+        cmd.arg("build");
+    }
 
     if !opt.dev {
         cmd.arg("--release");
@@ -237,6 +256,8 @@ fn workload(opt: &Opt) -> String {
 
     let target = if let Some(ref test) = opt.test {
         find_binary("test", &binary_path, test)
+    } else if let Some(ref unit_test ) = opt.unit_test {
+        find_binary("unit_test", &binary_path, unit_test)
     } else if let Some(ref bench) = opt.bench {
         find_binary("bench", &binary_path, bench)
     } else if let Some(ref bin) = opt.bin.as_ref().or(opt.example.as_ref()) {

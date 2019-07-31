@@ -58,6 +58,9 @@ cargo flamegraph --bin=stress2
 
 # if you want to pass arguments, as you would with cargo run:
 cargo flamegraph -- my-command --my-arg my-value -m -f
+
+# run against unit tests:
+cargo flamegraph --dev --unit_test mybin -- test_name
 ```
 
 ## Usage
